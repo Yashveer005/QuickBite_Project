@@ -1,0 +1,11 @@
+
+body{font-family:Arial, sans-serif;background:#f4f6f8;margin:0;padding:0;}
+.container{width:90%;max-width:1000px;margin:20px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.nav{background:#0b5ed7;color:#fff;padding:10px;}
+.btn{background:#ff6600;color:#fff;padding:8px 12px;border:none;border-radius:6px;cursor:pointer;text-decoration:none;}
+.form-container{width:360px;margin:30px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.cards{display:flex;gap:15px;flex-wrap:wrap;}
+.card{background:#eef5ff;padding:10px;border-radius:8px;width:240px;text-align:center;}
+.cart-table, table{width:100%;border-collapse:collapse;}
+.cart-table th, .cart-table td, table th, table td{border:1px solid #eee;padding:8px;text-align:left;}
+.error{color:#b00020;}
