@@ -25,9 +25,31 @@ Users can sign up, log in, browse the menu, and place food orders easily.
 - Database: MySQL
 - Server: XAMPP / Apache
 
-## How to Run Locally
+## 🛠 How to Run Locally
 1. Download or clone this repository  
-2. Move it to C:\xampp\htdocs\
-3. Start Apache and MySQL from XAMPP
-4. Import food_db.sql into phpMyAdmin
-5. Visit http://localhost/QuickBite_Project
+2. Move it to C:\xampp\htdocs  
+3. Start Apache and MySQL from XAMPP  
+4. Import food_db.sql into phpMyAdmin  
+5. Visit [http://localhost/QuickBite_Project](http://localhost/QuickBite_Project)
+
+---
+
+## 🍴 QuickBite Project Screenshots
+
+### 🏠 Home Page  
+![Home Page](project_screenshots/home_page.jpg)
+
+### 🍕 Menu Page  
+![Menu Page](project_screenshots/menu_page.jpg)
+
+### 🛒 Cart Page  
+![Cart Page](project_screenshots/cart_page.jpg)
+
+### 🔐 Login Page  
+![Login Page](project_screenshots/login_page.jpg)
+
+### 🧾 Sign Up Page  
+![Sign Up Page](project_screenshots/signup_page.jpg)
+
+### ✅ Checkout Page  
+![Checkout Page](project_screenshots/checkout_page.jpg)
