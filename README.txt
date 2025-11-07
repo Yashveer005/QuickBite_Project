@@ -31,3 +31,15 @@ Users can sign up, log in, browse the menu, and place food orders easily.
 3. Start Apache and MySQL from XAMPP
 4. Import food_db.sql into phpMyAdmin
 5. Visit http://localhost/QuickBite_Project
+
+
+## 🖼 QuickBite Project Screenshots
+
+### Home Page  
+![Home](project_screenshots/homepage.jpg)
+
+### Menu Page  
+![Menu](project_screenshots/menu_page.jpg)
+
+### Cart Page  
+![Cart](project_screenshots/cart_page.jpg)
