@@ -1,11 +1,99 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: #fff;
+  color: #333;
+}
 
-body{font-family:Arial, sans-serif;background:#f4f6f8;margin:0;padding:0;}
-.container{width:90%;max-width:1000px;margin:20px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-.nav{background:#0b5ed7;color:#fff;padding:10px;}
-.btn{background:#ff6600;color:#fff;padding:8px 12px;border:none;border-radius:6px;cursor:pointer;text-decoration:none;}
-.form-container{width:360px;margin:30px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-.cards{display:flex;gap:15px;flex-wrap:wrap;}
-.card{background:#eef5ff;padding:10px;border-radius:8px;width:240px;text-align:center;}
-.cart-table, table{width:100%;border-collapse:collapse;}
-.cart-table th, .cart-table td, table th, table td{border:1px solid #eee;padding:8px;text-align:left;}
-.error{color:#b00020;}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ff6600;
+  padding: 18px 60px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  color: white;
+}
+.logo span {
+  color: #0033cc;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 14px;
+  font-weight: 500;
+}
+nav a:hover {
+  color: #0033cc;
+}
+
+.search-box {
+  display: flex;
+  width: 60%;
+  max-width: 600px;
+  background: white;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  margin: 20px auto;
+}
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 15px 20px;
+  font-size: 16px;
+}
+.search-box button {
+  background: #0033cc;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.search-box button:hover {
+  background: #ff6600;
+}
+
+.food-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+.food-card {
+  background: white;
+  border-radius: 15px;
+  width: 230px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+.food-card:hover {
+  transform: scale(1.05);
+}
+.food-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+.food-info {
+  padding: 15px;
+  text-align: center;
+}
+.food-info h3 {
+  margin: 5px 0;
+}
+.food-info p {
+  color: #ff6600;
+  font-weight: bold;
+}
