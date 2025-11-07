@@ -36,10 +36,24 @@ Users can sign up, log in, browse the menu, and place food orders easily.
 ## 🖼 QuickBite Project Screenshots
 
 ### Home Page  
-![Home](project_screenshots/homepage.jpg)
+![Home](project_screenshots/home_page.jpg)
 
 ### Menu Page  
 ![Menu](project_screenshots/menu_page.jpg)
 
 ### Cart Page  
 ![Cart](project_screenshots/cart_page.jpg)
+
+### Login Page  
+![Login](project_screenshots/login_page.jpg)
+
+### Sign Up Page  
+![Sign Up](project_screenshots/signup_page.jpg)
+
+### Checkout Page  
+![Checkoput](project_screenshots/checkout_page.jpg)
+
+
+
+
+
