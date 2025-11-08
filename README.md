@@ -53,3 +53,12 @@ Users can sign up, log in, browse the menu, and place food orders easily.
 
 ### ✅ Checkout Page  
 ![Checkout Page](project_screenshots/checkout_page.jpg)
+
+
+
+---
+
+### 📜 License
+This project is protected under the *QuickBite Project License © 2025 Yashveer Singh*.  
+Use of this source code is allowed *only for educational and personal learning purposes*.  
+Commercial use or redistribution without permission is *strictly prohibited*.
