@@ -8,9 +8,10 @@ if (empty($_SESSION['cart'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
     $fullname = trim($_POST['fullname']);
-    $phone = trim($_POST['phone']);
-    $address = trim($_POST['address']);
+    $phone    = trim($_POST['phone']);
+    $address  = trim($_POST['address']);
 
     $errors = [];
     if (!preg_match("/^[A-Za-z\s]+$/", $fullname)) {
@@ -24,15 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (!empty($errors)) {
-        echo "<div style='max-width:600px;margin:18px auto;font-family:Poppins;text-align:left;color:#e00;'>";
-        foreach ($errors as $e) {
-            echo "<p>⚠ $e</p>";
-        }
-        echo "<a href='cart.php' style='display:inline-block;margin-top:12px;color:#f56600;text-decoration:none;font-weight:700;'>Go back</a></div>";
+        echo "<div style='max-width:600px;margin:18px auto;font-family:Poppins;color:red'>";
+        foreach ($errors as $e) echo "<p>⚠ $e</p>";
+        echo "<a href='cart.php'>Go back</a></div>";
         exit;
     }
 
-    // compute totals
+    // Calculate totals
     $subtotal = 0;
     foreach ($_SESSION['cart'] as $it) {
         $subtotal += $it['price'] * $it['qty'];
@@ -42,159 +41,170 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $total = $subtotal + $delivery + $tax;
     $now = date("Y-m-d H:i:s");
 
-    // insert into DB
-    $order_id = null;
-    $check = mysqli_query($conn, "SHOW TABLES LIKE 'orders'");
-    if ($check && mysqli_num_rows($check) > 0) {
-        $fullname = mysqli_real_escape_string($conn, $fullname);
-        $phone = mysqli_real_escape_string($conn, $phone);
-        $address = mysqli_real_escape_string($conn, $address);
-        $sql = "INSERT INTO orders (fullname, phone, address, subtotal, delivery, tax, total, status, created_at)
-                VALUES ('$fullname', '$phone', '$address', $subtotal, $delivery, $tax, $total, 'Preparing', '$now')";
-        mysqli_query($conn, $sql);
-        $order_id = mysqli_insert_id($conn);
+    // Insert order
+    mysqli_query($conn, "
+        INSERT INTO orders (fullname, phone, address, subtotal, delivery, tax, total, status, created_at)
+        VALUES ('$fullname','$phone','$address',$subtotal,$delivery,$tax,$total,'Preparing','$now')
+    ");
+    $order_id = mysqli_insert_id($conn);
 
-        foreach ($_SESSION['cart'] as $it) {
-            $name = mysqli_real_escape_string($conn, $it['name']);
-            $price = $it['price'];
-            $qty = $it['qty'];
-            mysqli_query($conn, "INSERT INTO order_items (order_id, name, price, qty) VALUES ($order_id, '$name', $price, $qty)");
-        }
+    foreach ($_SESSION['cart'] as $it) {
+        $name = mysqli_real_escape_string($conn, $it['name']);
+        mysqli_query($conn, "
+            INSERT INTO order_items (order_id, name, price, qty)
+            VALUES ($order_id,'$name',{$it['price']},{$it['qty']})
+        ");
     }
 
     $_SESSION['cart'] = [];
 
-    // user-specific order numbering
-    $q = "SELECT COUNT(*) AS total_orders FROM orders WHERE phone = '$phone'";
-    $r = mysqli_query($conn, $q);
+    // User-wise order number
+    $r = mysqli_query($conn,"SELECT COUNT(*) AS c FROM orders WHERE phone='$phone'");
     $rw = mysqli_fetch_assoc($r);
-    $user_order_number = $rw['total_orders'];
+    $user_order_number = $rw['c'];
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmation — QuickBite</title>
-    <style>
-        :root {
-            --orange: #f56600;
-            --orange2: #ff944d;
-            --bg: #fff;
-            --radius: 14px;
-            --shadow: 0 0 8px rgba(0,0,0,0.06);
-        }
-        body {
-            font-family: "Poppins", system-ui;
-            background: var(--bg);
-            color: #222;
-            margin: 0;
-            padding: 30px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-            animation: fadeIn 0.8s ease-in-out;
-        }
-        .card {
-            background: #fff;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 30px;
-            text-align: center;
-        }
-        h2 {
-            color: var(--orange);
-            margin-bottom: 18px;
-        }
-        p { margin: 6px 0; color: #555; }
-        .btns a {
-            display: inline-block;
-            padding: 10px 22px;
-            margin: 6px;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 8px;
-        }
-        .btns .home { background: var(--orange); color: #fff; }
-        .btns .menu { background: var(--orange2); color: #fff; }
-        .note { margin-top: 20px; color: #777; font-size: 14px; }
-        .history { margin-top: 25px; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 15px;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #eee;
-            text-align: center;
-        }
-        th {
-            background: var(--orange2);
-            color: #fff;
-        }
-        td.status {
-            font-weight: 600;
-        }
-        .status.Preparing { color: #ff8c00; }
-        .status.Delivered { color: green; }
-        .status.Cancelled { color: red; }
-        footer {
-            margin-top: 30px;
-            padding: 12px;
-            text-align: center;
-            background: linear-gradient(90deg, var(--orange), var(--orange2));
-            color: #fff;
-            font-size: 14px;
-            border-radius: 0 0 var(--radius) var(--radius);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Order Confirmed — QuickBite</title>
+
+<style>
+body{
+    font-family:Poppins,Arial;
+    background:#fff;
+    margin:0;
+    padding:30px;
+}
+.container{
+    max-width:900px;
+    margin:auto;
+}
+.card{
+    background:#fff;
+    padding:30px;
+    border-radius:14px;
+    box-shadow:0 0 12px rgba(0,0,0,0.08);
+    margin-bottom:25px;
+    text-align:center;
+}
+h2{color:#f56600;margin-bottom:12px}
+.btn a{
+    display:inline-block;
+    margin:8px;
+    padding:10px 22px;
+    background:#f56600;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+    font-weight:600;
+}
+.btn a.menu{background:#ff944d}
+.rest-grid{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-top:15px;
+}
+.rest{
+    width:220px;
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 0 8px rgba(0,0,0,0.08);
+    padding:10px;
+}
+.rest img{
+    width:100%;
+    height:120px;
+    object-fit:cover;
+    border-radius:10px;
+}
+.history table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:12px;
+}
+th,td{
+    padding:10px;
+    border:1px solid #eee;
+}
+th{
+    background:#ff944d;
+    color:white;
+}
+footer{
+    margin-top:30px;
+    text-align:center;
+    padding:12px;
+    background:linear-gradient(90deg,#f56600,#ff944d);
+    color:white;
+    border-radius:12px;
+}
+</style>
 </head>
+
 <body>
+
 <div class="container">
-    <div class="card">
-        <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" width="70" alt="success">
-        <h2>Order Confirmed!</h2>
-        <p>Thank you <strong><?php echo $_SESSION['user_name']; ?></strong>, your order has been placed successfully.</p>
-        <p>Order Total: ₹<?php echo $total; ?></p>
-        <p>Your Order ID: #<?php echo $user_order_number; ?></p>
 
-        <div class="btns">
-            <a href="index.php" class="home">🏠 Home</a>
-            <a href="menu.php" class="menu">🍔 Order More</a>
-        </div>
-        <div class="note">Delivery expected in 30–40 mins 🚚</div>
-    </div>
-
-    <?php
-    // fetch order history per user
-    $res = mysqli_query($conn, "SELECT id, total, status, created_at FROM orders WHERE phone='$phone' ORDER BY id ASC");
-    if ($res && mysqli_num_rows($res) > 0) {
-        echo "<div class='card history'><h3>🧾 Your Recent Orders</h3><table><tr><th>#Order ID</th><th>Date</th><th>Total (₹)</th><th>Status</th></tr>";
-        $count = 1;
-        while ($row = mysqli_fetch_assoc($res)) {
-            echo "<tr>
-                    <td>#".$count."</td>
-                    <td>".$row['created_at']."</td>
-                    <td>".$row['total']."</td>
-                    <td class='status ".$row['status']."'>".$row['status']."</td>
-                  </tr>";
-            $count++;
-        }
-        echo "</table></div>";
-    }
-    ?>
+<!-- HEADER -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+  <div style="font-size:22px;font-weight:800">
+    <span style="color:#007bff">Quick</span><span style="color:#f56600">Bite</span>
+  </div>
+  <div>Hi, <b><?php echo $_SESSION['user_name']; ?></b> 👋</div>
 </div>
 
-<footer>© 2025 QuickBite — Designed by Yashveer Singh</footer>
+<!-- CONFIRM CARD -->
+<div class="card">
+  <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" width="70">
+  <h2>Order Confirmed!</h2>
+
+  <p>Thank you <b><?php echo $_SESSION['user_name']; ?></b></p>
+  <p><b>Total Paid:</b> ₹<?php echo $total; ?></p>
+  <p style="font-size:18px">
+    Your Order ID:
+    <span style="color:#f56600;font-weight:700">
+      #<?php echo $user_order_number; ?>
+    </span>
+  </p>
+
+  <div class="btn">
+    <a href="index.php">🏠 Home</a>
+    <a href="menu.php" class="menu">🍔 Order More</a>
+  </div>
+
+  <p style="margin-top:15px;color:#777">Delivery expected in 30–40 mins 🚚</p>
+</div>
+
+<!-- ORDER HISTORY -->
+<?php
+$res = mysqli_query($conn,"SELECT total,status,created_at FROM orders WHERE phone='$phone'");
+if(mysqli_num_rows($res)>0){
+echo "<div class='card history'><h3>🧾 Your Order History</h3>
+<table><tr><th>#</th><th>Date</th><th>Total</th><th>Status</th></tr>";
+$i=1;
+while($row=mysqli_fetch_assoc($res)){
+echo "<tr>
+<td>$i</td>
+<td>{$row['created_at']}</td>
+<td>₹ {$row['total']}</td>
+<td>{$row['status']}</td>
+</tr>";
+$i++;
+}
+echo "</table></div>";
+}
+?>
+
+</div>
+
+<footer>
+© 2025 QuickBite — Designed by Yashveer Singh
+</footer>
+
 </body>
 </html>

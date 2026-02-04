@@ -3,27 +3,40 @@ include('db_connect.php');
 
 // When form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
 
-    // ✅ BACKEND Validation for name (only letters and spaces)
-    if (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
-        echo "<script>alert('Name must contain only letters and spaces!');window.location='signup.php';</script>";
+    // Clean inputs
+    $username = trim($_POST['username']);
+    $username = preg_replace('/\s+/u', ' ', $username);
+    $email    = trim($_POST['email']);
+    $password = $_POST['password'];
+
+    // ✅ BACKEND name validation (letters + single spaces)
+    if (!preg_match('/^[A-Za-z]+( [A-Za-z]+)*$/', $username)) {
+        echo "<script>alert('Full Name must contain only letters and spaces!');window.location='signup.php';</script>";
         exit;
     }
 
     // Check if email already exists
-    $check = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
+    $check = mysqli_query($conn, "SELECT id FROM users WHERE email='$email' LIMIT 1");
     if (mysqli_num_rows($check) > 0) {
         echo "<script>alert('Email already registered! Please login.');window.location='login.php';</script>";
+        exit;
+    }
+
+    // ✅ FIX: HASH password before saving
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+    $insert = mysqli_query(
+        $conn,
+        "INSERT INTO users (username, email, password)
+         VALUES ('$username','$email','$hashedPassword')"
+    );
+
+    if ($insert) {
+        echo "<script>alert('Signup successful! Please login now.');window.location='login.php';</script>";
+        exit;
     } else {
-        $insert = mysqli_query($conn, "INSERT INTO users (name, email, password) VALUES ('$name','$email','$password')");
-        if ($insert) {
-            echo "<script>alert('Signup successful! Please login now.');window.location='login.php';</script>";
-        } else {
-            echo "<script>alert('Something went wrong! Please try again.');</script>";
-        }
+        echo "<script>alert('Something went wrong! Please try again.');</script>";
     }
 }
 ?>
@@ -41,13 +54,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background-size: 200% 200%;
             animation: gradientMove 6s ease infinite;
         }
-
         @keyframes gradientMove {
             0% {background-position: 0% 50%;}
             50% {background-position: 100% 50%;}
             100% {background-position: 0% 50%;}
         }
-
         header {
             display: flex;
             justify-content: space-between;
@@ -56,27 +67,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 15px 50px;
             color: #fff;
         }
-
         .logo {
             font-size: 26px;
             font-weight: bold;
         }
-
         .logo span {
             color: #0033cc;
         }
-
         nav a {
             color: white;
             text-decoration: none;
             margin: 0 10px;
             font-weight: 500;
         }
-
-        nav a:hover {
-            text-decoration: underline;
-        }
-
         .signup-container {
             background-color: #ffffffee;
             border-radius: 12px;
@@ -85,13 +88,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 30px;
             box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
         }
-
         h2 {
             text-align: center;
             color: #0033cc;
             margin-bottom: 20px;
         }
-
         form input {
             width: 100%;
             padding: 12px;
@@ -101,11 +102,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             outline: none;
             font-size: 15px;
         }
-
         form input:focus {
             border-color: #ff6600;
         }
-
         button {
             width: 100%;
             padding: 12px;
@@ -116,24 +115,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-size: 16px;
             cursor: pointer;
         }
-
         button:hover {
             background-color: #ff6600;
         }
-
         p {
             text-align: center;
             margin-top: 10px;
         }
-
         a {
             color: #0033cc;
         }
     </style>
 </head>
+
 <body>
 
-<!-- HEADER (same as homepage) -->
 <header>
   <div class="logo">Quick<span>Bite</span></div>
   <nav>
@@ -144,11 +140,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </nav>
 </header>
 
-<!-- SIGNUP FORM -->
 <div class="signup-container">
     <h2>Create Your Account</h2>
     <form method="POST" onsubmit="return validateForm()">
-        <input type="text" name="name" id="name" placeholder="Full Name" required>
+        <input type="text" name="username" id="username" placeholder="Full Name" required>
         <input type="email" name="email" placeholder="Email Address" required>
         <input type="password" name="password" placeholder="Password" minlength="5" required>
         <button type="submit">Sign Up</button>
@@ -157,12 +152,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 
 <script>
-// ✅ FRONTEND Validation for name (only alphabets + spaces)
+// ✅ FRONTEND Validation (fixed regex)
 function validateForm() {
-    const name = document.getElementById("name").value.trim();
-    const regex = /^[a-zA-Z\s]+$/;
+    const name = document.getElementById("username").value.trim();
+    const regex = /^[A-Za-z]+( [A-Za-z]+)*$/;
+
     if (!regex.test(name)) {
-        alert("Name must contain only letters and spaces!");
+        alert("Full Name must contain only letters and spaces!");
         return false;
     }
     return true;

@@ -1,34 +1,46 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 session_start();
 include('db_connect.php');
 
 $msg = "";
 
 // Redirect if already logged in
-if (isset($_SESSION['user_name'])) {
+if (isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit();
 }
 
 // Handle login
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
 
-    $sql = "SELECT * FROM users WHERE email='$email' AND password='$password' LIMIT 1";
+    // ✅ FIX: password ko SQL se hata diya
+    $sql = "SELECT * FROM users WHERE email='$email' LIMIT 1";
     $res = mysqli_query($conn, $sql);
 
-    if ($res && mysqli_num_rows($res) > 0) {
+    if ($res && mysqli_num_rows($res) == 1) {
+
         $user = mysqli_fetch_assoc($res);
-        $_SESSION['user_name'] = $user['name'];
-        $_SESSION['user_email'] = $user['email'];
-        $_SESSION['user_id'] = $user['id'];
-        header("Location: index.php");
-        exit();
+
+        // ✅ FIX: correct password verification
+        if (password_verify($password, $user['password'])) {
+
+            $_SESSION['user_id']    = $user['id'];
+            $_SESSION['user_name']  = $user['username'];
+            $_SESSION['user_email'] = $user['email'];
+            $_SESSION['logged_in']  = true;
+
+            header("Location: index.php");
+            exit();
+
+        } else {
+            $msg = "❌ Wrong password";
+        }
+
     } else {
-        $msg = "❌ Invalid email or password!";
+        $msg = "❌ Email not registered";
     }
 }
 ?>
@@ -146,6 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </style>
 </head>
+
 <?php
 if (isset($_GET['msg']) && $_GET['msg'] == 'loggedout') {
     echo "<script>
@@ -155,13 +168,14 @@ if (isset($_GET['msg']) && $_GET['msg'] == 'loggedout') {
     </script>";
 }
 ?>
+
 <body>
     <div class="container">
         <div class="logo"><span>Quick</span>Bite</div>
         <h2>Welcome Back 👋</h2>
         <p>Login to order your favorite meals</p>
 
-        <?php if ($msg) echo "<p class='msg'>$msg</p>"; ?>
+        <?php if (!empty($msg)) echo "<p class='msg'>$msg</p>"; ?>
 
         <form method="POST">
             <input type="email" name="email" placeholder="Enter your email" required>
